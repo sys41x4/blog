@@ -3,9 +3,12 @@
 */
 
 $(function() {
+
   const btnSbTrigger = $("#sidebar-trigger");
   const btnSearchTrigger = $("#search-trigger");
   const btnCancel = $("#search-cancel");
+  const btnClear = $("#search-cleaner");
+
   const main = $("#main");
   const topbarTitle = $("#topbar-title");
   const searchWrapper = $("#search-wrapper");
@@ -30,7 +33,8 @@ $(function() {
     };
   }());
 
-  /*--- Actions in mobile screens (Sidebar hidden) ---*/
+
+  /*--- Actions in small screens (Sidebar unloaded) ---*/
 
   const mobileSearchBar = (function () {
     return {
@@ -71,6 +75,7 @@ $(function() {
             hints.removeClass("unloaded");
           }
           resultWrapper.addClass("unloaded");
+          btnClear.removeClass("visible");
           main.removeClass("unloaded");
 
           // now the release method must be called after $(#main) display
@@ -86,6 +91,7 @@ $(function() {
     };
 
   }());
+
 
   function isMobileView() {
     return btnCancel.hasClass("loaded");
@@ -110,20 +116,38 @@ $(function() {
     searchWrapper.removeClass("input-focus");
   });
 
-  input.on("input", () => {
-    if (input.val() === "") {
-      if (isMobileView()) {
-        hints.removeClass("unloaded");
-      } else {
+  input.on("keyup", function(e) {
+    if (e.keyCode === 8 && input.val() === "") {
+      if (!isMobileView()) {
         resultSwitch.off();
+      } else {
+        hints.removeClass("unloaded");
       }
-
     } else {
-      resultSwitch.on();
-      if (isMobileView()) {
-        hints.addClass("unloaded");
+      if (input.val() !== "") {
+        resultSwitch.on();
+
+        if (!btnClear.hasClass("visible")) {
+          btnClear.addClass("visible");
+        }
+
+        if (isMobileView()) {
+          hints.addClass("unloaded");
+        }
       }
     }
+  });
+
+  btnClear.on("click", function() {
+    input.val("");
+    if (isMobileView()) {
+      hints.removeClass("unloaded");
+      results.empty();
+    } else {
+      resultSwitch.off();
+    }
+    input.focus();
+    btnClear.removeClass("visible");
   });
 
 });
